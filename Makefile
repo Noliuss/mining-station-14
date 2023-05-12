@@ -15,13 +15,13 @@ RL:
 	cd Resources/Mining/RL && make
 
 client:
-	cd ./bin/Content.Client && ../../linklibs && ./Content.Client
+	cd ./bin/Content.Client && ../../linklibs && noaslr ./Content.Client && ./Content.Client
 
 fastclient:
 	cd ./bin/Content.Client && ../../linklibs && ./Content.Client --connect-address localhost:1211 --connect && pkill -TERM Content.Server
 
 server:
-	cd ./bin/Content.Server && ./Content.Server --config-file ../../devel_config.toml
+	cd ./bin/Content.Server && noaslr ./Content.Server && ./Content.Server --config-file ../../devel_config.toml
 
 fastserver:
 	cd ./bin/Content.Server && ./Content.Server --config-file ../../fast_config.toml &
@@ -29,7 +29,7 @@ fastserver:
 lint:
 	rm -f Content.Server/RL/libRL/libRL.so
 	${DOTNET_BUILD} Content.YAMLLinter
-	cd bin/Content.YAMLLinter && ../../linklibs && ./Content.YAMLLinter
+	cd bin/Content.YAMLLinter && ../../linklibs && noaslr ./Content.YAMLLinter && ./Content.YAMLLinter
 
 test:
 	cd RobustToolbox/bin/UnitTesting && ../../../linklibs
