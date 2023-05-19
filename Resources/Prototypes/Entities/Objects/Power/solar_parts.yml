@@ -11,3 +11,5 @@
   - type: Tag
     tags:
       - SolarAssemblyPart
+  - type: StaticPrice
+    price: 1000

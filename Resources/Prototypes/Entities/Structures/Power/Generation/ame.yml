@@ -75,6 +75,8 @@
       AMEController-fuelJarContainer: !type:ContainerSlot {}
   - type: GuideHelp
     guides: [ AME, Power ]
+  - type: StaticPrice
+    price: 3000
 
 - type: entity
   noSpawn: true

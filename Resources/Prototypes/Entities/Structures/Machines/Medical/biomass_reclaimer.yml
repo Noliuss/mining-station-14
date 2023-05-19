@@ -21,3 +21,5 @@
       path: /Audio/Ambience/Objects/reclaimer_ambience.ogg
   - type: Machine
     board: BiomassReclaimerMachineCircuitboard
+  - type: StaticPrice
+    price: 3400

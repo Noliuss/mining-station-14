@@ -58,6 +58,8 @@
   - type: ContainerContainer
     containers:
       charger_slot: !type:ContainerSlot
+  - type: StaticPrice
+    price: 200
 
 - type: entity
   name: recharger

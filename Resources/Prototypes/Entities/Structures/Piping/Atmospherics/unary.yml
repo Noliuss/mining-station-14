@@ -251,7 +251,7 @@
           nodeGroupID: Pipe
           pipeDirection: South
     - type: StaticPrice
-      price: 500
+      price: 50000
     - type: Transform
       noRot: false
     - type: ActivatableUI

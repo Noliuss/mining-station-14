@@ -25,6 +25,8 @@
         60.0
       VisionRadius: !type:Single
         100.0
+  - type: StaticPrice
+    price: 11000
 
 - type: entity
   parent: WeaponTurretCIWS
@@ -41,3 +43,5 @@
         60.0
       VisionRadius: !type:Single
         80.0
+  - type: StaticPrice
+    price: 2000
