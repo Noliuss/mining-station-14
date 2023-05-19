@@ -69,12 +69,6 @@ namespace Content.Shared.Cargo.Prototypes
         public string Product { get; } = string.Empty;
 
         /// <summary>
-        ///     The point cost of the product.
-        /// </summary>
-        [DataField("cost")]
-        public int PointCost { get; }
-
-        /// <summary>
         ///     The prototype category of the product. (e.g. Engineering, Medical)
         /// </summary>
         [DataField("category")]
