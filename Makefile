@@ -34,6 +34,7 @@ lint:
 test:
 	cd RobustToolbox/bin/UnitTesting && ../../../linklibs
 	cd bin/Content.Tests && ../../linklibs
+	cd bin/Content.IntegrationTests && ../../linklibs
 	dotnet test ${DOTNET_FLAGS}
 
 package: libRL RL
