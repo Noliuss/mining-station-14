@@ -8,6 +8,11 @@ public class CLJSystem : EntitySystem
 {
     public override void Initialize()
     {
+        Load();
+    }
+
+    public void Load()
+    {
         var load = clojure.clr.api.Clojure.var("clojure.core", "load");
         load.invoke("startup");
     }
@@ -33,5 +38,20 @@ sealed class CLJEvalCommand : IConsoleCommand
         var str = clojure.clr.api.Clojure.var("clojure.core", "str");
         var result = eval.invoke(read_string.invoke(args[0]));
         shell.WriteLine((string)str.invoke(result));
+    }
+}
+
+[AdminCommand(AdminFlags.Host)]
+sealed class CLJReloadCommand : IConsoleCommand
+{
+    public string Command => "creload";
+    public string Description => "Reload CLJ startup file";
+    public string Help => "creload";
+
+    public void Execute(IConsoleShell shell, string argStr, string[] args)
+    {
+        var sysMan = IoCManager.Resolve<IEntitySystemManager>();
+        var clj = sysMan.GetEntitySystem<CLJSystem>();
+        clj.Load();
     }
 }
