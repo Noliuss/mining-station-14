@@ -13,6 +13,7 @@
         storagebase: !type:Container
           ents: []
     - type: Storage
+      capacity: 500
       collideInsert: true
       whitelist:
         tags:
