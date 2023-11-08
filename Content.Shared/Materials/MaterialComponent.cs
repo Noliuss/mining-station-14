@@ -17,10 +17,5 @@ namespace Content.Shared.Materials
 
         [DataField("quality")]
         public float Quality = 1; // multiplier on total material price
-
-        public float MeltingTemperature()
-        {
-            return Materials.Values.Max();
-        }
     }
 }

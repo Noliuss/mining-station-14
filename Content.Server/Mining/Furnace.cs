@@ -109,12 +109,25 @@ public class FurnaceSystem : EntitySystem
         {
             if (TryComp<MaterialComponent>(ore, out var material))
             {
-                if (comp.Temperature > material.MeltingTemperature())
+                if (temp.CurrentTemperature > MeltingTemperature(material))
                 {
                     Melt(ore, comp, material);
                 }
             }
         }
+    }
+
+    private float MeltingTemperature(MaterialComponent material)
+    {
+        float max = 0;
+        foreach ((string k, int v) in material.Materials)
+        {
+            if (_prototype.TryIndex<MaterialPrototype>(k, out var mat))
+            {
+                max = MathF.Max(mat.MeltingTemperature, max);
+            }
+        }
+        return max;
     }
 
     private void Melt(EntityUid uid, FurnaceComponent furnace, MaterialComponent ore)
