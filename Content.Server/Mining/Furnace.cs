@@ -10,7 +10,9 @@ using Content.Shared.Atmos;
 using System.Linq;
 
 // actually used
+using Robust.Shared.Maths;
 using Robust.Shared.Prototypes;
+using Robust.Server.GameObjects;
 
 using Content.Server.Atmos.EntitySystems;
 using Content.Server.Atmos.Piping.Components;
@@ -32,6 +34,9 @@ public class FurnaceComponent : Component
     [DataField("baseSpecHeat")]
     [ViewVariables(VVAccess.ReadWrite)]
     public float BaseSpecHeat = 1000f;
+
+    [ViewVariables(VVAccess.ReadWrite)]
+    public bool ForceMelt = false; // set to true to force melt everything without waiting for temperature, for debugging
 
     [ViewVariables(VVAccess.ReadWrite)]
     public bool ForcePour = false; // set to true to force pour using VV, for debugging
@@ -106,7 +111,7 @@ public class FurnaceSystem : EntitySystem
         {
             if (TryComp<MaterialComponent>(ore, out var material))
             {
-                if (temp.CurrentTemperature > MeltingTemperature(material))
+                if (comp.ForceMelt || temp.CurrentTemperature > MeltingTemperature(material))
                 {
                     Melt(ore, comp, material);
                 }
@@ -144,13 +149,82 @@ public class FurnaceSystem : EntitySystem
         // iron oxide + CO -> Iron
     }
 
+    private EntityUid SpawnSheet(EntityUid uid, Dictionary<string, int> materials)
+    {
+        int total = materials.Sum(x => x.Value);
+        var partials = materials.ToDictionary(x => x.Key, x => (float)x.Value/total);
+        float purity = 1f;
+
+        // Prototype selection logic, assume slag unless we meet certain criteria
+        string proto = "SheetSlag1";
+        if (percentage("Gold", partials) > 0.5)
+        {
+            proto = "IngotGold1";
+            purity = percentage("Gold", partials);
+        }
+        else if (percentage("Silver", partials) > 0.5)
+        {
+            proto = "IngotSilver1";
+            purity = percentage("Silver", partials);
+        }
+        else if (percentage("Uranium", partials) > 0.8)
+        {
+            proto = "SheetUranium1";
+            purity = percentage("Uranium", partials);
+        }
+        else if (percentage("Plasma", partials) > 0.8)
+        {
+            proto = "SheetPlasma";
+            purity = percentage("Plasma", partials);
+        }
+        else if (percentage("Glass", partials) > 0.8)
+        {
+            if (percentage("Plasma", partials) > 0.1 && percentage("Steel", partials) > 0.1)
+                proto = "SheetRPGlass";
+            else if (percentage("Plasma", partials) > 0.1)
+                proto = "SheetPGlass";
+            else
+                proto = "SheetGlass1";
+        }
+        else if (percentage("Steel", partials) > 0.5)
+        {
+            proto = "SheetSteel1";
+            purity = percentage("Steel", partials);
+        }
+        else if (percentage("Copper", partials) > 0.5)
+        {
+            proto = "SheetCopper1";
+            purity = percentage("Copper", partials);
+        }
+
+        var result = Spawn(proto, Transform(uid).Coordinates);
+        // adjust coloration based on purity
+        if (TryComp<SpriteComponent>(result, out var sprite))
+        {
+            float min_color = 0.75f;
+            int color_scale = (int)(255*((1-min_color)*purity + min_color));
+            /*
+             * broken
+            sprite._netSync = true;
+            sprite.Color = new Color(color_scale, color_scale, color_scale, 255);
+            */
+        }
+        return result;
+    }
+
+    private float percentage(string key, Dictionary<string, float> materials)
+    {
+        if (materials.ContainsKey(key))
+            return materials[key];
+        else
+            return 0f;
+    }
+
     private void Pour(EntityUid uid, FurnaceComponent furnace)
     {
         int total = furnace.Materials.Sum(x => x.Value);
         int numSheets = total/100;
-        // TODO: pick prototype
-        string proto = "SheetSteel1";
-        var result = Spawn(proto, Transform(uid).Coordinates);
+        var result = SpawnSheet(uid, furnace.Materials);
         if (TryComp<MaterialComponent>(result, out var mat))
         {
             mat.Materials.Clear();
