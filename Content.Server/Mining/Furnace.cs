@@ -14,6 +14,7 @@ using Robust.Shared.Prototypes;
 
 using Content.Server.Atmos.EntitySystems;
 using Content.Server.Atmos.Piping.Components;
+using Content.Server.Stack;
 using Content.Server.Temperature.Components;
 using Content.Shared.Materials;
 
@@ -31,6 +32,9 @@ public class FurnaceComponent : Component
     [DataField("baseSpecHeat")]
     [ViewVariables(VVAccess.ReadWrite)]
     public float BaseSpecHeat = 1000f;
+
+    [ViewVariables(VVAccess.ReadWrite)]
+    public bool ForcePour = false; // set to true to force pour using VV, for debugging
 }
 
 public class FurnaceSystem : EntitySystem
@@ -40,6 +44,7 @@ public class FurnaceSystem : EntitySystem
 
     [Dependency] private readonly AtmosphereSystem _atmosphereSystem = default!;
     [Dependency] private readonly IPrototypeManager _prototype = default!;
+    [Dependency] private readonly StackSystem _stack = default!;
 
     public override void Initialize()
     {
@@ -60,6 +65,12 @@ public class FurnaceSystem : EntitySystem
             UpdateTemp(comp.Owner, comp, temp, dt);
             MeltOres(comp.Owner, comp, temp);
             OreReactions(comp.Owner, comp, temp);
+
+            if (comp.ForcePour)
+            {
+                Pour(comp.Owner, comp);
+                comp.ForcePour = false;
+            }
         }
     }
 
@@ -137,11 +148,18 @@ public class FurnaceSystem : EntitySystem
     {
         int total = furnace.Materials.Sum(x => x.Value);
         int numSheets = total/100;
-        // pick prototype
-        string proto = "SheetSteel";
+        // TODO: pick prototype
+        string proto = "SheetSteel1";
         var result = Spawn(proto, Transform(uid).Coordinates);
-        // set number of sheets
-        // add materials
+        if (TryComp<MaterialComponent>(result, out var mat))
+        {
+            mat.Materials.Clear();
+            foreach ((var k, var v) in furnace.Materials)
+            {
+                mat.Materials.Add(k, v/numSheets);
+            }
+        }
+        _stack.SetCount(result, numSheets);
         furnace.Materials.Clear();
     }
 }
