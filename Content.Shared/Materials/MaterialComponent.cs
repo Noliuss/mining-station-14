@@ -1,3 +1,5 @@
+using System.Linq;
+
 using Robust.Shared.GameStates;
 using Robust.Shared.Serialization.TypeSerializers.Implementations.Custom.Prototype.Dictionary;
 
@@ -15,5 +17,10 @@ namespace Content.Shared.Materials
 
         [DataField("quality")]
         public float Quality = 1; // multiplier on total material price
+
+        public float MeltingTemperature()
+        {
+            return Materials.Values.Max();
+        }
     }
 }
