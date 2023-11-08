@@ -1,0 +1,56 @@
+- type: entity
+  id: Furnace
+  name: furnace
+  parent: BaseMachinePowered
+  description: It produces sheets and ingots using ores.
+  components:
+    - type: UserInterface
+      interfaces:
+      - key: enum.StorageUiKey.Key
+        type: StorageBoundUserInterface
+    - type: ContainerContainer
+      containers:
+        storagebase: !type:Container
+          ents: []
+    - type: Storage
+      collideInsert: true
+      whitelist:
+        tags:
+          - Ore
+    - type: Sprite
+      sprite: Structures/Machines/ore_processor.rsi
+      netsync: false
+      layers:
+        - state: icon
+          map: ["enum.LatheVisualLayers.IsRunning"]
+        - state: unlit
+          shader: unshaded
+          map: ["enum.PowerDeviceVisualLayers.Powered"]
+        - state: inserting
+          map: ["enum.MaterialStorageVisualLayers.Inserting"]
+        - state: panel
+          map: ["enum.WiresVisualLayers.MaintenancePanel"]
+    - type: Fixtures
+      fixtures:
+      - shape:
+          !type:PhysShapeAabb
+          bounds: "-0.4,-0.4,0.4,0.4"
+        density: 190
+        mask:
+        - MachineMask
+        layer:
+        - MachineLayer
+      - shape:
+          !type:PhysShapeAabb
+          bounds: "-0.4,0.1,0.4,0.3"
+        id: brrt
+        hard: false
+        layer:
+        - FullTileLayer
+    - type: ApcPowerReceiver
+      dumpHeat: 0.1
+    - type: Furnace
+    - type: Temperature
+      heatDamageThreshold: 1800
+    - type: Heater
+      maxPower: 10000
