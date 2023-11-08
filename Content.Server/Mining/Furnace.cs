@@ -10,6 +10,8 @@ using Content.Shared.Atmos;
 using System.Linq;
 
 // actually used
+using Robust.Shared.Prototypes;
+
 using Content.Server.Atmos.EntitySystems;
 using Content.Server.Atmos.Piping.Components;
 using Content.Server.Temperature.Components;
@@ -20,13 +22,6 @@ namespace Content.Server.Mining;
 [RegisterComponent]
 public class FurnaceComponent : Component
 {
-    /// <summary>
-    /// Current temperature inside furnace.
-    /// </summary>
-    [DataField("temperature")]
-    [ViewVariables(VVAccess.ReadWrite)]
-    public float Temperature = Atmospherics.T20C;
-
     [ViewVariables(VVAccess.ReadOnly)]
     public bool DoorOpen = false;
 
@@ -44,6 +39,7 @@ public class FurnaceSystem : EntitySystem
     [Dependency] private readonly IRobustRandom _random = default!;
 
     [Dependency] private readonly AtmosphereSystem _atmosphereSystem = default!;
+    [Dependency] private readonly IPrototypeManager _prototype = default!;
 
     public override void Initialize()
     {
@@ -58,24 +54,21 @@ public class FurnaceSystem : EntitySystem
     {
         foreach (var comp in EntityManager.EntityQuery<FurnaceComponent>())
         {
-            UpdateTemp(comp.Owner, comp, dt);
-            MeltOres(comp.Owner, comp);
-            OreReactions(comp.Owner);
+            if (!TryComp<TemperatureComponent>(comp.Owner, out var temp))
+                continue;
+
+            UpdateTemp(comp.Owner, comp, temp, dt);
+            MeltOres(comp.Owner, comp, temp);
+            OreReactions(comp.Owner, comp, temp);
         }
     }
 
     private void OnAtmosUpdate(EntityUid uid, FurnaceComponent comp, AtmosDeviceUpdateEvent args)
     {
-        float dt = 1/_atmosphereSystem.AtmosTickRate; // FIXME
-        var environment = _atmosphereSystem.GetContainingMixture(uid, true, true);
-        if (environment is null)
-            return;
-
-        float coeff = 100f; // TODO: higher if door is open
-        float dQ = coeff * (comp.Temperature - environment.Temperature)* dt;
-        _atmosphereSystem.AddHeat(environment, dQ);
-        float dT = -dQ / SpecHeat(comp);
-        comp.Temperature = MathF.Max(comp.Temperature + dT, environment.Temperature); // can't fall below ambient
+        if (TryComp<TemperatureComponent>(uid, out var temp))
+        {
+            temp.AtmosTemperatureTransferEfficiency = 0.05f; // TODO: higher if door open
+        }
     }
 
     private float SpecHeat(FurnaceComponent comp)
@@ -84,23 +77,16 @@ public class FurnaceSystem : EntitySystem
         return comp.BaseSpecHeat;
     }
 
-    private void UpdateTemp(EntityUid uid, FurnaceComponent comp, float dt)
+    private void UpdateTemp(EntityUid uid, FurnaceComponent comp, TemperatureComponent temp, float dt)
     {
-        // if powered, add temp
         if (TryComp<ApcPowerReceiverComponent>(uid, out var power) && power.Powered)
         {
             float energy = power.Load * (1 - power.DumpHeat) * dt;
-            comp.Temperature += energy/SpecHeat(comp);
-        }
-
-        // peg temperature component to our internal number
-        if (TryComp<TemperatureComponent>(uid, out var temp))
-        {
-            temp.CurrentTemperature = comp.Temperature;
+            temp.CurrentTemperature += energy/SpecHeat(comp);
         }
     }
 
-    private void MeltOres(EntityUid uid, FurnaceComponent comp)
+    private void MeltOres(EntityUid uid, FurnaceComponent comp, TemperatureComponent temp)
     {
         if (!TryComp<ServerStorageComponent>(uid, out var storage))
             return;
@@ -132,11 +118,16 @@ public class FurnaceSystem : EntitySystem
 
     private void Melt(EntityUid uid, FurnaceComponent furnace, MaterialComponent ore)
     {
-        // TODO: Add my materials to the furnace
+        foreach ((var k, var v) in ore.Materials)
+        {
+            if (!furnace.Materials.ContainsKey(k))
+                furnace.Materials[k] = 0;
+            furnace.Materials[k] += v;
+        }
         QueueDel(ore.Owner);
     }
 
-    private void OreReactions(EntityUid uid)
+    private void OreReactions(EntityUid uid, FurnaceComponent furnace, TemperatureComponent temp)
     {
         // 2C + O2 -> 2CO
         // iron oxide + CO -> Iron
@@ -149,6 +140,8 @@ public class FurnaceSystem : EntitySystem
         // pick prototype
         string proto = "SheetSteel";
         var result = Spawn(proto, Transform(uid).Coordinates);
+        // set number of sheets
+        // add materials
         furnace.Materials.Clear();
     }
 }
