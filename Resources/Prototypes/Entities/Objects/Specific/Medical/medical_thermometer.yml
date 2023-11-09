@@ -5,9 +5,12 @@
   description: Point this at an object to take its temperature.
   components:
   - type: Sprite
-    sprite: Objects/Specific/Medical/thermometer.rsi
+    sprite: Objects/Specific/Mining/ir_thermometer.rsi
     netsync: false
-    state: thermometer
+    layers:
+    - state: ir_thermo
+    - state: ir_display
+      shader: unshaded
   - type: ActivatableUI
     key: enum.MedicalThermometerUiKey.Key
     closeOnHandDeselect: false
