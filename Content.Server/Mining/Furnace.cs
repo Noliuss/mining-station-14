@@ -22,6 +22,10 @@ using Content.Shared.Materials;
 using Content.Shared.Power;
 using Content.Shared.Storage;
 using Content.Shared.Verbs;
+using Content.Shared.Chemistry;
+using Content.Shared.Mining.Components;
+using Content.Server.Chemistry.Components;
+using static Content.Shared.Storage.SharedStorageComponent;
 
 namespace Content.Server.Mining;
 
@@ -51,12 +55,14 @@ public class FurnaceSystem : EntitySystem
     [Dependency] private readonly AtmosphereSystem _atmosphereSystem = default!;
     [Dependency] private readonly IPrototypeManager _prototype = default!;
     [Dependency] private readonly StackSystem _stack = default!;
+    [Dependency] private readonly UserInterfaceSystem _userInterfaceSystem = default!;
 
     public override void Initialize()
     {
         base.Initialize();
         SubscribeLocalEvent<FurnaceComponent, AtmosDeviceUpdateEvent>(OnAtmosUpdate);
         SubscribeLocalEvent<FurnaceComponent, GetVerbsEvent<ActivationVerb>>(AddPourVerb);
+        SubscribeLocalEvent<FurnaceComponent, BoundUIOpenedEvent>((uid, comp, _) => UpdateUiState(uid,comp));
     }
 
     public override void Update(float dt)
@@ -82,7 +88,28 @@ public class FurnaceSystem : EntitySystem
                 storage.ClickInsert = storage.IsOpen;
                 storage.CollideInsert = storage.IsOpen;
             }
+
+            if (TryComp<ApcPowerReceiverComponent>(comp.Owner, out var power) &&
+                power.Powered &&
+                _userInterfaceSystem.IsUiOpen(comp.Owner, FurnaceUiKey.Key))
+                UpdateUiState(comp.Owner, comp);
         }
+    }
+
+    private void UpdateUiState(EntityUid uid, FurnaceComponent comp)
+    {
+        if (!TryComp<ServerStorageComponent>(uid, out var storage))
+            return;
+
+        if (!TryComp<TemperatureComponent>(uid, out var temp))
+            return;
+
+        if (!TryComp<ApcPowerReceiverComponent>(uid, out var power) || !power.Powered)
+            return;
+
+        var state = new FurnaceBoundUserInterfaceState(storage.IsOpen, temp.CurrentTemperature, power.Load);
+
+        _userInterfaceSystem.TrySetUiState(uid, FurnaceUiKey.Key, state);
     }
 
     private void OnAtmosUpdate(EntityUid uid, FurnaceComponent comp, AtmosDeviceUpdateEvent args)
