@@ -125,7 +125,7 @@ public class FurnaceSystem : EntitySystem
         {
             if (TryComp<MaterialComponent>(ore, out var material))
             {
-                if (comp.ForceMelt || temp.CurrentTemperature > MeltingTemperature(material))
+                if (comp.ForceMelt || temp.CurrentTemperature > MeltingTemperature(material, comp))
                 {
                     Melt(ore, comp, material);
                 }
@@ -138,14 +138,18 @@ public class FurnaceSystem : EntitySystem
             Pour(uid, comp);
     }
 
-    private float MeltingTemperature(MaterialComponent material)
+    private float MeltingTemperature(MaterialComponent material, FurnaceComponent comp)
     {
         float max = 0;
         foreach ((string k, int v) in material.Materials)
         {
             if (_prototype.TryIndex<MaterialPrototype>(k, out var mat))
             {
-                max = MathF.Max(mat.MeltingTemperature, max);
+                float myMelt = mat.MeltingTemperature;
+                // soda ash as a flux to reduce the melting temperature of glass
+                if (k == "Glass" && comp.Materials.ContainsKey("Soda"))
+                    myMelt -= 500f;
+                max = MathF.Max(myMelt, max);
             }
         }
         return max;
