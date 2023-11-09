@@ -19,18 +19,22 @@
         tags:
           - Ore
     - type: Sprite
-      sprite: Structures/Machines/ore_processor.rsi
+      sprite: Structures/Machines/furnace.rsi
       netsync: false
       layers:
-        - state: icon
-          map: ["enum.LatheVisualLayers.IsRunning"]
-        - state: unlit
-          shader: unshaded
-          map: ["enum.PowerDeviceVisualLayers.Powered"]
-        - state: inserting
-          map: ["enum.MaterialStorageVisualLayers.Inserting"]
-        - state: panel
-          map: ["enum.WiresVisualLayers.MaintenancePanel"]
+      - state: furnace
+      - state: lit
+        shader: unshaded
+        map: ["enum.PowerDeviceVisualLayers.Powered"]
+      - state: hatch_closed
+        map: ["enum.StorageVisualLayers.Door"]
+    - type: Appearance
+      visuals:
+      - type: PowerDeviceVisualizer
+      - type: StorageVisualizer
+        state: furnace
+        state_open: hatch_open
+        state_closed: hatch_closed
     - type: Fixtures
       fixtures:
       - shape:
@@ -49,9 +53,9 @@
         layer:
         - FullTileLayer
     - type: ApcPowerReceiver
-      dumpHeat: 0.1
+      powerLoad: 10000
+      powerDisabled: true # don't let it idle and fry itself
+      dumpHeat: 0 # handled in FurnaceSystem itself
     - type: Furnace
     - type: Temperature
       heatDamageThreshold: 1800
-    - type: Heater
-      maxPower: 10000

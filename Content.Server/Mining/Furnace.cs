@@ -19,21 +19,25 @@ using Content.Server.Atmos.Piping.Components;
 using Content.Server.Stack;
 using Content.Server.Temperature.Components;
 using Content.Shared.Materials;
+using Content.Shared.Power;
+using Content.Shared.Storage;
+using Content.Shared.Verbs;
 
 namespace Content.Server.Mining;
 
 [RegisterComponent]
 public class FurnaceComponent : Component
 {
-    [ViewVariables(VVAccess.ReadOnly)]
-    public bool DoorOpen = false;
-
     [ViewVariables(VVAccess.ReadWrite)]
     public readonly Dictionary<string, int> Materials = new();
 
     [DataField("baseSpecHeat")]
     [ViewVariables(VVAccess.ReadWrite)]
     public float BaseSpecHeat = 1000f;
+
+    /// Maximum pour before it automatically pours itself
+    [DataField("pourCapacity")]
+    public int PourCapacity = 3000;
 
     [ViewVariables(VVAccess.ReadWrite)]
     public bool ForceMelt = false; // set to true to force melt everything without waiting for temperature, for debugging
@@ -47,6 +51,7 @@ public class FurnaceSystem : EntitySystem
     [Dependency] private readonly SharedAudioSystem _sharedAudioSystem = default!;
     [Dependency] private readonly IRobustRandom _random = default!;
 
+    [Dependency] private readonly AppearanceSystem _appearance = default!;
     [Dependency] private readonly AtmosphereSystem _atmosphereSystem = default!;
     [Dependency] private readonly IPrototypeManager _prototype = default!;
     [Dependency] private readonly StackSystem _stack = default!;
@@ -55,9 +60,7 @@ public class FurnaceSystem : EntitySystem
     {
         base.Initialize();
         SubscribeLocalEvent<FurnaceComponent, AtmosDeviceUpdateEvent>(OnAtmosUpdate);
-        // on pour button pressed, pour
-        // on door open, open
-        // on door close, close
+        SubscribeLocalEvent<FurnaceComponent, GetVerbsEvent<ActivationVerb>>(AddPourVerb);
     }
 
     public override void Update(float dt)
@@ -76,6 +79,13 @@ public class FurnaceSystem : EntitySystem
                 Pour(comp.Owner, comp);
                 comp.ForcePour = false;
             }
+
+            // for just the furnace, don't allow insertion if the door is closed
+            if (TryComp<ServerStorageComponent>(comp.Owner, out var storage))
+            {
+                storage.ClickInsert = storage.IsOpen;
+                storage.CollideInsert = storage.IsOpen;
+            }
         }
     }
 
@@ -83,7 +93,17 @@ public class FurnaceSystem : EntitySystem
     {
         if (TryComp<TemperatureComponent>(uid, out var temp))
         {
-            temp.AtmosTemperatureTransferEfficiency = 0.05f; // TODO: higher if door open
+            if (TryComp<ServerStorageComponent>(uid, out var storage) && storage.IsOpen)
+            {
+                // Don't leave the door open when it's hot
+                temp.AtmosTemperatureTransferEfficiency = 0.9f;
+            }
+            else
+            {
+                temp.AtmosTemperatureTransferEfficiency = 0.05f;
+            }
+
+            // TODO: make atmos hotspot
         }
     }
 
@@ -95,10 +115,14 @@ public class FurnaceSystem : EntitySystem
 
     private void UpdateTemp(EntityUid uid, FurnaceComponent comp, TemperatureComponent temp, float dt)
     {
-        if (TryComp<ApcPowerReceiverComponent>(uid, out var power) && power.Powered)
+        if (TryComp<ApcPowerReceiverComponent>(uid, out var power))
         {
-            float energy = power.Load * (1 - power.DumpHeat) * dt;
-            temp.CurrentTemperature += energy/SpecHeat(comp);
+            if (power.Powered)
+            {
+                float energy = power.Load * (1 - power.DumpHeat) * dt;
+                temp.CurrentTemperature += energy/SpecHeat(comp);
+            }
+            _appearance.SetData(uid, PowerDeviceVisuals.Powered, power.Powered);
         }
     }
 
@@ -117,6 +141,11 @@ public class FurnaceSystem : EntitySystem
                 }
             }
         }
+
+        // auto pour if overflowing
+        int total = comp.Materials.Sum(x => x.Value);
+        if (total > comp.PourCapacity)
+            Pour(uid, comp);
     }
 
     private float MeltingTemperature(MaterialComponent material)
@@ -235,5 +264,20 @@ public class FurnaceSystem : EntitySystem
         }
         _stack.SetCount(result, numSheets);
         furnace.Materials.Clear();
+    }
+
+    private void AddPourVerb(EntityUid uid, FurnaceComponent component, GetVerbsEvent<ActivationVerb> args)
+    {
+        if (!args.CanAccess || !args.CanInteract)
+            return;
+
+        ActivationVerb verb = new()
+        {
+            Text = Loc.GetString("furnace-pour"),
+            IconEntity = args.Using,
+            Act = () => Pour(uid, component)
+        };
+
+        args.Verbs.Add(verb);
     }
 }
