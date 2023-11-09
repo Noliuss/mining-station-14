@@ -59,3 +59,6 @@
     - type: Furnace
     - type: Temperature
       heatDamageThreshold: 1800
+    - type: GuideHelp
+      guides:
+      - Metallurgy
