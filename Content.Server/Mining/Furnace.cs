@@ -93,13 +93,13 @@ public class FurnaceSystem : EntitySystem
             {
                 // Don't leave the door open when it's hot
                 temp.AtmosTemperatureTransferEfficiency = 0.9f;
+
+                // TODO: make atmos hotspot
             }
             else
             {
                 temp.AtmosTemperatureTransferEfficiency = 0.05f;
             }
-
-            // TODO: make atmos hotspot
         }
     }
 
