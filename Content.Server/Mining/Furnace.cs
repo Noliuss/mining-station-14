@@ -31,10 +31,6 @@ public class FurnaceComponent : Component
     [ViewVariables(VVAccess.ReadWrite)]
     public readonly Dictionary<string, int> Materials = new();
 
-    [DataField("baseSpecHeat")]
-    [ViewVariables(VVAccess.ReadWrite)]
-    public float BaseSpecHeat = 1000f;
-
     /// Maximum pour before it automatically pours itself
     [DataField("pourCapacity")]
     public int PourCapacity = 3000;
@@ -107,12 +103,6 @@ public class FurnaceSystem : EntitySystem
         }
     }
 
-    private float SpecHeat(FurnaceComponent comp)
-    {
-        // TODO
-        return comp.BaseSpecHeat;
-    }
-
     private void UpdateTemp(EntityUid uid, FurnaceComponent comp, TemperatureComponent temp, float dt)
     {
         if (TryComp<ApcPowerReceiverComponent>(uid, out var power))
@@ -120,7 +110,7 @@ public class FurnaceSystem : EntitySystem
             if (power.Powered)
             {
                 float energy = power.Load * (1 - power.DumpHeat) * dt;
-                temp.CurrentTemperature += energy/SpecHeat(comp);
+                temp.CurrentTemperature += energy/temp.SpecificHeat;
             }
             _appearance.SetData(uid, PowerDeviceVisuals.Powered, power.Powered);
         }
