@@ -4,7 +4,7 @@
   name: materials-steel
   icon: { sprite: Objects/Materials/Sheets/metal.rsi, state: steel }
   price: 0.05
-  meltingTemperature: 1673 # K
+  meltingTemperature: 1811 # K
 
 - type: material
   id: Gold
