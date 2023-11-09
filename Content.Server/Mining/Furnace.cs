@@ -128,7 +128,7 @@ public class FurnaceSystem : EntitySystem
 
     private void MeltOres(EntityUid uid, FurnaceComponent comp, TemperatureComponent temp)
     {
-        if (!TryComp<ServerStorageComponent>(uid, out var storage))
+        if (!TryComp<ServerStorageComponent>(uid, out var storage) || storage.StoredEntities is null)
             return;
 
         foreach (var ore in storage.StoredEntities)
