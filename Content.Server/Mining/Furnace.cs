@@ -44,6 +44,8 @@ public class FurnaceComponent : Component
 
     [ViewVariables(VVAccess.ReadWrite)]
     public bool ForcePour = false; // set to true to force pour using VV, for debugging
+
+    public float MaxPower = 10000;
 }
 
 public class FurnaceSystem : EntitySystem
@@ -56,6 +58,7 @@ public class FurnaceSystem : EntitySystem
     [Dependency] private readonly IPrototypeManager _prototype = default!;
     [Dependency] private readonly StackSystem _stack = default!;
     [Dependency] private readonly UserInterfaceSystem _userInterfaceSystem = default!;
+    [Dependency] private readonly StorageSystem _storageSystem = default!;
 
     public override void Initialize()
     {
@@ -63,6 +66,10 @@ public class FurnaceSystem : EntitySystem
         SubscribeLocalEvent<FurnaceComponent, AtmosDeviceUpdateEvent>(OnAtmosUpdate);
         SubscribeLocalEvent<FurnaceComponent, GetVerbsEvent<ActivationVerb>>(AddPourVerb);
         SubscribeLocalEvent<FurnaceComponent, BoundUIOpenedEvent>((uid, comp, _) => UpdateUiState(uid,comp));
+
+        SubscribeLocalEvent<FurnaceComponent, FurnaceStoreToggleButtonMessage>(OnStoreToggleButtonMessage);
+        SubscribeLocalEvent<FurnaceComponent, FurnacePourButtonMessage>((uid, comp, _) => Pour(uid, comp));
+        SubscribeLocalEvent<FurnaceComponent, SetTargetPowerMessage>(OnSetTargetPowerMessage);
     }
 
     public override void Update(float dt)
@@ -89,11 +96,41 @@ public class FurnaceSystem : EntitySystem
                 storage.CollideInsert = storage.IsOpen;
             }
 
-            if (TryComp<ApcPowerReceiverComponent>(comp.Owner, out var power) &&
-                power.Powered &&
-                _userInterfaceSystem.IsUiOpen(comp.Owner, FurnaceUiKey.Key))
-                UpdateUiState(comp.Owner, comp);
+            UpdateUiState(comp.Owner, comp);
         }
+    }
+
+    private void OnSetTargetPowerMessage(EntityUid uid, FurnaceComponent comp, SetTargetPowerMessage message)
+    {
+        if (TryComp<ApcPowerReceiverComponent>(uid, out var power))
+        {
+            power.Load = comp.MaxPower * message.TargetPower;
+        }
+        UpdateUiState(comp.Owner, comp);
+    }
+
+    private void OnStoreToggleButtonMessage(EntityUid uid, FurnaceComponent comp, FurnaceStoreToggleButtonMessage message)
+    {
+        if (!TryComp<ServerStorageComponent>(uid, out var storage))
+            return;
+
+        var user = message.Session.AttachedEntity;
+        if (user != null)
+        {
+            if (!storage.IsOpen)
+            {
+                _storageSystem.OpenStorageUI(uid, user.Value, storage);
+                RaiseLocalEvent(uid, new BoundUIOpenedEvent(StorageUiKey.Key, uid, message.Session));
+            }
+            else if (TryComp(uid, out ServerUserInterfaceComponent? ui) && TryComp<ActorComponent>(user, out var actor))
+            { 
+                storage.IsOpen = false;
+                _userInterfaceSystem.TryClose(uid, StorageUiKey.Key, actor.PlayerSession, ui);
+                RaiseLocalEvent(uid, new BoundUIClosedEvent(StorageUiKey.Key, uid, message.Session));
+            }
+        }
+
+        UpdateUiState(uid, comp);
     }
 
     private void UpdateUiState(EntityUid uid, FurnaceComponent comp)
@@ -104,10 +141,12 @@ public class FurnaceSystem : EntitySystem
         if (!TryComp<TemperatureComponent>(uid, out var temp))
             return;
 
-        if (!TryComp<ApcPowerReceiverComponent>(uid, out var power) || !power.Powered)
+        if (!TryComp<ApcPowerReceiverComponent>(uid, out var power))
             return;
 
-        var state = new FurnaceBoundUserInterfaceState(storage.IsOpen, temp.CurrentTemperature, power.Load);
+        var currentPower = power.Load / comp.MaxPower;
+
+        var state = new FurnaceBoundUserInterfaceState(storage.IsOpen, temp.CurrentTemperature, currentPower);
 
         _userInterfaceSystem.TrySetUiState(uid, FurnaceUiKey.Key, state);
     }

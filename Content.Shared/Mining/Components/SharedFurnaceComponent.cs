@@ -10,6 +10,28 @@ namespace Content.Shared.Mining.Components
     {
     }
 
+    [Serializable, NetSerializable]
+    public sealed class FurnacePourButtonMessage : BoundUserInterfaceMessage
+    {
+        public FurnacePourButtonMessage() { }
+    }
+
+    [Serializable, NetSerializable]
+    public sealed class FurnaceStoreToggleButtonMessage : BoundUserInterfaceMessage
+    {
+        public FurnaceStoreToggleButtonMessage(){}
+    }
+
+    [Serializable, NetSerializable]
+    public sealed class SetTargetPowerMessage : BoundUserInterfaceMessage
+    {
+        public float TargetPower;
+
+        public SetTargetPowerMessage(float targetPower)
+        {
+            TargetPower = targetPower;
+        }
+    }
 
     [Serializable, NetSerializable]
     public sealed class FurnaceBoundUserInterfaceState : BoundUserInterfaceState

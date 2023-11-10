@@ -33,6 +33,15 @@ namespace Content.Client.Furnace.UI
             _window.OnClose += Close;
 
             // Setup static button actions.
+            _window.DoorButton.OnPressed += _ => SendMessage(
+                new FurnaceStoreToggleButtonMessage());
+            _window.SpigotButton.OnPressed += _ => SendMessage(
+                new FurnacePourButtonMessage());
+
+            _window.TargetPower.OnValueChanged += (args) =>
+            {
+                SendMessage(new SetTargetPowerMessage(args.Value));
+            };
         }
 
         /// <summary>

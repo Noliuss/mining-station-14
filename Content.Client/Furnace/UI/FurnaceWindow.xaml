@@ -6,11 +6,11 @@
     <BoxContainer Orientation="Vertical" Name="Furnace">
         <GridContainer Margin="2 0 0 0" Columns="2">
             <Label Text="Power"/>
-            <Slider Name="TargetPower" MinWidth="200" MinValue="0" MaxValue="1"/>
+            <Slider Name="TargetPower" Access="Public" MinWidth="200" MinValue="0" MaxValue="1"/>
             <Label Text="Temp"/>
-            <Label Name="Temp" Text="0"/>
+            <Label Name="Temp"/>
             <Label Text="Door"/>
-            <Button Name="DoorButton" Access="Public" Text="Close"/>
+            <Button Name="DoorButton" Access="Public"/>
             <Label Text="Spigot"/>
             <Button Name="SpigotButton" Access="Public" Text="Pour"/>
         </GridContainer>
