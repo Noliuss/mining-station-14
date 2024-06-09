@@ -13,7 +13,7 @@ Compiling
 1. Download and install:
 
    - Git
-   - .NET 7 SDK
+   - .NET 8 SDK
 
 2. Clone this repository.
 
