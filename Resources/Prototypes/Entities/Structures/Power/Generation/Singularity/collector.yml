@@ -48,3 +48,23 @@
   - type: Anchorable
   - type: Rotatable
   - type: Pullable
+
+- type: entity
+  id: RadiationStormRod
+  name: radiation storm rod
+  description: A machine that draws radiation storm pulses toward it and harnesses the power.
+  parent: RadiationCollector
+  placement:
+    mode: SnapgridCenter
+  components:
+  - type: Sprite
+    sprite: Structures/Power/Generation/Singularity/storm_rod.rsi
+    netsync: false
+    snapCardinals: true
+    layers:
+      - state: ca_on
+        map: ["enum.RadiationCollectorVisualLayers.Main"]
+  - type: Appearance
+    visuals:
+      - type: RadiationCollectorVisualizer
+  - type: RadiationStormRod

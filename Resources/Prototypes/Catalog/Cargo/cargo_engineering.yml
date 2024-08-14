@@ -106,3 +106,13 @@
   cost: 80000
   category: Engineering
   group: market
+
+- type: cargoProduct
+  id: StormRod
+  icon:
+    sprite: Structures/Power/Generation/Singularity/storm_rod.rsi
+    state: ca_on
+  product: RadiationStormRod
+  cost: 10000
+  category: Engineering
+  group: market

@@ -12,6 +12,7 @@ using Robust.Shared.Map.Components;
 using Robust.Shared.Random;
 using Robust.Shared.Timing;
 using Robust.Shared.Maths;
+using Content.Server.Singularity.Components;
 
 namespace Content.Server.StationEvents.Events
 {
@@ -128,6 +129,30 @@ namespace Content.Server.StationEvents.Events
                 coordinates = default;
                 return false;
             }
+
+            //check for nearby radiation storm rods
+            var diff = -1f;
+            foreach (var rod in _entityManager.EntityQuery<RadiationStormRodComponent>())
+            {
+                if (!TryComp<TransformComponent>(rod.Owner, out var xform))
+                    continue;
+
+                if (!TryComp<RadiationCollectorComponent>(rod.Owner, out var collector))
+                    continue;
+
+                if (!collector.Enabled)
+                    continue;
+
+                if (!xform.Coordinates.TryDistance(_entityManager, coordinates, out var distance))
+                    continue;
+
+                if (distance <= rod.Range && (diff == -1 || rod.Range - distance < diff))
+                {
+                    coordinates = xform.Coordinates;
+                    diff = rod.Range - distance;
+                }
+            }
+
             return true;
         }
     }
