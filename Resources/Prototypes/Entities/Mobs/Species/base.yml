@@ -321,9 +321,10 @@
   - type: StandingState
   - type: Fingerprint
   - type: MobPrice
-    price: -10000
+    price: 0
     deathPenalty: 1.0
   - type: CanEscapeInventory
+  - type: CargoSellBlacklist
 
 - type: entity
   save: false
