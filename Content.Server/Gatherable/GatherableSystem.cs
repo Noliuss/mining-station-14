@@ -40,8 +40,6 @@ public sealed class GatherableSystem : EntitySystem
     //on interact hand event for entities with the a drill arm Component
     private void OnInteractHand(EntityUid uid, GatherableComponent component, InteractHandEvent args)
     {
-        Logger.Debug("rock punch");
-
         if (!TryComp<GatheringToolComponent>(args.User, out var tool) ||
             tool.GatheringEntities.TryGetValue(args.User, out var cancelToken))
             return;

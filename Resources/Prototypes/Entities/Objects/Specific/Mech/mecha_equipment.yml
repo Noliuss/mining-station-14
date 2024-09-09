@@ -24,3 +24,21 @@
   - type: ContainerContainer
     containers:
       item-container: !type:Container
+
+- type: entity
+  id: MechEquipmentDrill
+  parent: BaseMechEquipment
+  name: mech drill
+  description: Gives the mech the ability to drill rocks for ore.
+  components:
+  - type: Tag
+    tags:
+      - Pickaxe
+  - type: Sprite
+    state: mecha_drill
+  - type: MechGatheringTool
+    damage:
+      types:
+        Structural: 150
+    gatheringTime: 1
+    sound: /Audio/Items/drill_use.ogg

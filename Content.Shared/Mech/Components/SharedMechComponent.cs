@@ -81,7 +81,7 @@ public abstract class SharedMechComponent : Component
     /// The maximum amount of equipment items that can be installed in the mech
     /// </summary>
     [DataField("maxEquipmentAmount")]
-    public int MaxEquipmentAmount = 3;
+    public int MaxEquipmentAmount = 2;
 
     /// <summary>
     /// A whitelist for inserting equipment items.
