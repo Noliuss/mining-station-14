@@ -1,7 +1,7 @@
 - type: gameMap
   id: Bunker
   mapName: 'Bunker'
-  mapPath: /Mining/Maps/bunker.yml
+  mapPath: /Maps/Dungeon/bunker.yml
   minPlayers: 0
   maxPlayers: 12
   fallback: true

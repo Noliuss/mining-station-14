@@ -1,7 +1,7 @@
 - type: gameMap
   id: MiningPill
   mapName: 'Mining Pill'
-  mapPath: /Mining/Maps/miningpill.yml
+  mapPath: /Maps/Mining/miningpill.yml
   minPlayers: 0
   maxPlayers: 6
   fallback: true

@@ -1,7 +1,7 @@
 - type: gameMap
   id: MiningQuartz
   mapName: 'Mining Quartz'
-  mapPath: /Mining/Maps/miningquartz.yml
+  mapPath: /Maps/Mining/miningquartz.yml
   minPlayers: 20
   maxPlayers: 15
   stations:

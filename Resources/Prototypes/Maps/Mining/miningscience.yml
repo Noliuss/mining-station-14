@@ -1,7 +1,7 @@
 - type: gameMap
   id: MiningScience
   mapName: 'Mining Science'
-  mapPath: /Mining/Maps/miningscience.yml
+  mapPath: /Maps/Mining/miningscience.yml
   minPlayers: 10
   maxPlayers: 25
   stations:

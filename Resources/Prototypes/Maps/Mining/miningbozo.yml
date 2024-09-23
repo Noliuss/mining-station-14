@@ -1,7 +1,7 @@
 - type: gameMap
   id: MiningBozo
   mapName: 'Mining Bozo'
-  mapPath: /Mining/Maps/miningbozo.yml
+  mapPath: /Maps/Mining/miningbozo.yml
   minPlayers: 3
   maxPlayers: 15
   stations:

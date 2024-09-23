@@ -1,7 +1,7 @@
 - type: gameMap
   id: MiningSuspension
   mapName: 'Mining Suspension'
-  mapPath: /Mining/Maps/miningsuspension.yml
+  mapPath: /Maps/Mining/miningsuspension.yml
   minPlayers: 3
   maxPlayers: 15
   stations:

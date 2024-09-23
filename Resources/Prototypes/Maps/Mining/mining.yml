@@ -1,7 +1,7 @@
 - type: gameMap
   id: Mining
   mapName: 'Mining'
-  mapPath: /Mining/Maps/mining.yml
+  mapPath: /Maps/Mining/mining.yml
   minPlayers: 0
   maxPlayers: 8
   fallback: true

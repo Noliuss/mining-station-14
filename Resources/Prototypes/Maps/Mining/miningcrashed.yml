@@ -1,7 +1,7 @@
 - type: gameMap
   id: MiningCrashed
   mapName: 'Mining Crashed'
-  mapPath: /Mining/Maps/miningcrashed.yml
+  mapPath: /Maps/Mining/miningcrashed.yml
   minPlayers: 3
   maxPlayers: 15
   stations:

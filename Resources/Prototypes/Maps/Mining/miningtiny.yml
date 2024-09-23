@@ -1,7 +1,7 @@
 - type: gameMap
   id: MiningTiny
   mapName: 'Mining Tiny'
-  mapPath: /Mining/Maps/miningtiny.yml
+  mapPath: /Maps/Mining/miningtiny.yml
   minPlayers: 0
   maxPlayers: 2
   stations:
