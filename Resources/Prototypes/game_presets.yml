@@ -14,7 +14,6 @@
   - extended
   - shittersafari
   name: extended-title
-  showInVote: true
   description: extended-description
   rules:
   - BasicStationEventScheduler
@@ -25,7 +24,6 @@
     - secret
     - sekrit
   name: secret-title
-  showInVote: true
   description: secret-description
   rules:
     - Secret
@@ -36,7 +34,6 @@
     - sandbox
   name: sandbox-title
   description: sandbox-description
-  showInVote: true
   maxPlayers: 5
   rules:
     - Sandbox
@@ -47,7 +44,6 @@
     - traitor
   name: traitor-title
   description: traitor-description
-  showInVote: true
   rules:
     - Traitor
     - BasicStationEventScheduler
@@ -59,7 +55,6 @@
     - sus
   name: suspicion-title
   description: suspicion-description
-  showInVote: true
   rules:
     - Suspicion
 
@@ -90,7 +85,6 @@
     - nukeops
   name: nukeops-title
   description: nukeops-description
-  showInVote: true
   rules:
     - Nukeops
     - BasicStationEventScheduler
@@ -105,7 +99,6 @@
     - zomber
   name: zombie-title
   description: zombie-description
-  showInVote: true
   rules:
     - Zombie
     - BasicStationEventScheduler
@@ -116,7 +109,6 @@
     - pirates
   name: pirates-title
   description: pirates-description
-  showInVote: true
   rules:
     - Pirates
     - BasicStationEventScheduler
@@ -134,6 +126,7 @@
   id: Dungeon
   name: Dungeon
   description: Recover a powerful artifact hidden deep within the asteroid.
+  showInVote: true
   rules:
     - DungeonRuleSystem
 
@@ -141,7 +134,6 @@
   id: MiningDungeon
   name: Mining Dungeon
   description: Recover a powerful artifact hidden deep within the asteroid.
-  showInVote: true
   rules:
     - MiningProfitManager
     - MiningEventScheduler
