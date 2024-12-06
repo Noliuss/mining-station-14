@@ -323,7 +323,6 @@ namespace Content.Server.StationEvents
         [Dependency] private readonly IConfigurationManager _configurationManager = default!;
         [Dependency] private readonly WarperSystem _dungeon = default!;
 
-        private string OldPool = string.Empty;
         private bool OldSupercond;
         private int KillCount;
 
@@ -336,8 +335,6 @@ namespace Content.Server.StationEvents
 
         public override void Added()
         {
-            OldPool = _configurationManager.GetCVar(CCVars.GameMapPool);
-            _configurationManager.SetCVar(CCVars.GameMapPool, "DungeonMapPool");
             OldSupercond = _configurationManager.GetCVar(CCVars.Superconduction);
             _configurationManager.SetCVar(CCVars.Superconduction, false);
         }
@@ -372,7 +369,6 @@ namespace Content.Server.StationEvents
 
         public override void Ended()
         {
-            _configurationManager.SetCVar(CCVars.GameMapPool, OldPool);
             _configurationManager.SetCVar(CCVars.Superconduction, OldSupercond);
         }
     }

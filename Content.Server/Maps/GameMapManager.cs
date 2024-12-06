@@ -3,8 +3,10 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Content.Shared.CCVar;
 using Content.Server.GameTicking;
+using Content.Server.StationEvents;
 using Robust.Server.Player;
 using Robust.Shared.Configuration;
+using Robust.Shared.GameObjects;
 using Robust.Shared.Prototypes;
 using Robust.Shared.Random;
 
@@ -74,9 +76,23 @@ public sealed class GameMapManager : IGameMapManager
         return maps.Length == 0 ? AllMaps().Where(x => x.Fallback) : maps;
     }
 
+    private string CurrentMapPool()
+    {
+        var sysMan = IoCManager.Resolve<IEntitySystemManager>();
+        var rule = sysMan.GetEntitySystem<DungeonRuleSystem>();
+        if (rule.RuleAdded)
+        {
+            return "DungeonMapPool";
+        }
+        else
+        {
+            return _configurationManager.GetCVar(CCVars.GameMapPool);
+        }
+    }
+
     public IEnumerable<GameMapPrototype> AllVotableMaps()
     {
-        if (_prototypeManager.TryIndex<GameMapPoolPrototype>(_configurationManager.GetCVar(CCVars.GameMapPool), out var pool))
+        if (_prototypeManager.TryIndex<GameMapPoolPrototype>(CurrentMapPool(), out var pool))
         {
             foreach (var map in pool.Maps)
             {
@@ -90,7 +106,7 @@ public sealed class GameMapManager : IGameMapManager
             }
         } else
         {
-            throw new Exception("Could not index map pool prototype " + _configurationManager.GetCVar(CCVars.GameMapPool) + "!");
+            throw new Exception("Could not index map pool prototype " + CurrentMapPool() + "!");
         }
     }
 
